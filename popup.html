@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 350px;
+      padding: 15px;
+      font-family: Arial, sans-serif;
+    }
+    h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    .mapping-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 8px;
+      background: #f5f5f5;
+      border-radius: 4px;
+    }
+    .mapping-item input {
+      margin-right: 8px;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+    }
+    .mapping-item input.keyword {
+      width: 80px;
+      font-weight: bold;
+    }
+    .mapping-item input.url {
+      flex: 1;
+      background: white;
+    }
+    .mapping-item input.url:focus {
+      outline: 2px solid #4285F4;
+      outline-offset: -1px;
+    }
+    .mapping-item .icon-btn {
+      margin-left: 8px;
+      padding: 5px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+    }
+    .mapping-item .icon-btn:hover {
+      background: #e0e0e0;
+    }
+    .mapping-item .icon-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+    .mapping-item .delete-btn svg {
+      fill: #ff4444;
+    }
+    .mapping-item .delete-btn:hover svg {
+      fill: #cc0000;
+    }
+    .mapping-item .edit-btn svg {
+      fill: #4285F4;
+    }
+    .mapping-item .edit-btn:hover svg {
+      fill: #3367D6;
+    }
+    .add-mapping {
+      display: flex;
+      align-items: center;
+      margin-top: 15px;
+      padding: 10px;
+      background: #e8f5e8;
+      border-radius: 4px;
+    }
+    .add-mapping input {
+      margin-right: 8px;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+    }
+    .add-mapping input.keyword {
+      width: 80px;
+      font-weight: bold;
+    }
+    .add-mapping input.url {
+      flex: 1;
+    }
+    .add-mapping button {
+      padding: 5px 15px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .add-mapping button:hover {
+      background: #45a049;
+    }
+    .instructions {
+      margin-top: 15px;
+      padding: 10px;
+      background: #fff3cd;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #856404;
+    }
+  </style>
+</head>
+<body>
+  <h2>GoKey - Keyword URL Mapper</h2>
+  <div id="mappings"></div>
+  
+  <div class="add-mapping">
+    <input type="text" id="newKeyword" class="keyword" placeholder="Keyword">
+    <input type="text" id="newUrl" class="url" placeholder="https://example.com">
+    <button id="addBtn">Add</button>
+  </div>
+  
+  <div class="instructions">
+    <strong>How to use:</strong><br>
+    Type "go" followed by space and your keyword in the address bar.<br>
+    Example: "go ash" will navigate to asharma.tech
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

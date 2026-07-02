@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "GoKey",
+  "version": "1.0",
+  "description": "Map keywords to URLs in the search bar",
+  "permissions": [
+    "tabs",
+    "storage"
+  ],
+  "omnibox": {
+    "keyword": "go"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "gokey-icon.svg"
+  },
+  "icons": {
+    "128": "gokey-icon.svg"
+  }
+}
