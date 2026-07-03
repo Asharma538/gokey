@@ -156,23 +156,21 @@ function exportConfig() {
   chrome.storage.local.get(['keywordMappings'], (result) => {
     const mappings = result.keywordMappings || defaultMappings;
     const configString = JSON.stringify(mappings, null, 2);
-    const base64Config = btoa(configString);
 
-    document.getElementById('exportTextarea').value = base64Config;
+    document.getElementById('exportTextarea').value = configString;
     document.getElementById('exportModal').classList.add('active');
   });
 }
 
 function importConfig() {
-  const base64Config = document.getElementById('importTextarea').value.trim();
+  const configString = document.getElementById('importTextarea').value.trim();
 
-  if (!base64Config) {
+  if (!configString) {
     showToast('Paste a config string first', true);
     return;
   }
 
   try {
-    const configString = atob(base64Config);
     const mappings = JSON.parse(configString);
 
     if (typeof mappings !== 'object' || mappings === null || Array.isArray(mappings)) {
