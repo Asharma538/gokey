@@ -1,253 +1,443 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <style>
-    body {
-      width: 350px;
-      padding: 15px;
-      font-family: Arial, sans-serif;
-    }
-    h2 {
-      margin-top: 0;
-      color: #333;
-    }
-    .mapping-item {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-      padding: 8px;
-      background: #f5f5f5;
-      border-radius: 4px;
-    }
-    .mapping-item input {
-      margin-right: 8px;
-      padding: 5px;
-      border: 1px solid #ddd;
-      border-radius: 3px;
-    }
-    .mapping-item input.keyword {
-      width: 80px;
-      font-weight: bold;
-    }
-    .mapping-item input.url {
-      flex: 1;
-      background: white;
-    }
-    .mapping-item input.url:focus {
-      outline: 2px solid #4285F4;
-      outline-offset: -1px;
-    }
-    .mapping-item .icon-btn {
-      margin-left: 8px;
-      padding: 5px;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 4px;
-    }
-    .mapping-item .icon-btn:hover {
-      background: #e0e0e0;
-    }
-    .mapping-item .icon-btn svg {
-      width: 18px;
-      height: 18px;
-    }
-    .mapping-item .delete-btn svg {
-      fill: #ff4444;
-    }
-    .mapping-item .delete-btn:hover svg {
-      fill: #cc0000;
-    }
-    .mapping-item .edit-btn svg {
-      fill: #4285F4;
-    }
-    .mapping-item .edit-btn:hover svg {
-      fill: #3367D6;
-    }
-    .add-mapping {
-      display: flex;
-      align-items: center;
-      margin-top: 15px;
-      padding: 10px;
-      background: #e8f5e8;
-      border-radius: 4px;
-    }
-    .add-mapping input {
-      margin-right: 8px;
-      padding: 5px;
-      border: 1px solid #ddd;
-      border-radius: 3px;
-    }
-    .add-mapping input.keyword {
-      width: 80px;
-      font-weight: bold;
-    }
-    .add-mapping input.url {
-      flex: 1;
-    }
-    .add-mapping button {
-      padding: 5px 15px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 3px;
-      cursor: pointer;
-    }
-    .add-mapping button:hover {
-      background: #45a049;
-    }
-    .instructions {
-      margin-top: 15px;
-      padding: 10px;
-      background: #fff3cd;
-      border-radius: 4px;
-      font-size: 12px;
-      color: #856404;
-    }
-    .config-buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-    }
-    .config-buttons button {
-      flex: 1;
-      padding: 8px 12px;
-      background: #6c757d;
-      color: white;
-      border: none;
-      border-radius: 3px;
-      cursor: pointer;
-      font-size: 13px;
-    }
-    .config-buttons button:hover {
-      background: #5a6268;
-    }
-    .config-buttons button.export {
-      background: #17a2b8;
-    }
-    .config-buttons button.export:hover {
-      background: #138496;
-    }
-    .config-buttons button.import {
-      background: #28a745;
-    }
-    .config-buttons button.import:hover {
-      background: #218838;
-    }
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 1000;
-    }
-    .modal.active {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .modal-content {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 400px;
-    }
-    .modal-content h3 {
-      margin-top: 0;
-      color: #333;
-    }
-    .modal-content textarea {
-      width: 100%;
-      height: 150px;
-      margin: 10px 0;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-family: monospace;
-      font-size: 12px;
-      resize: vertical;
-    }
-    .modal-buttons {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-      margin-top: 10px;
-    }
-    .modal-buttons button {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 3px;
-      cursor: pointer;
-    }
-    .modal-buttons button.cancel {
-      background: #6c757d;
-      color: white;
-    }
-    .modal-buttons button.confirm {
-      background: #28a745;
-      color: white;
-    }
-    .modal-buttons button.copy {
-      background: #17a2b8;
-      color: white;
-    }
-  </style>
+<meta charset="utf-8">
+<style>
+  :root {
+    --bg: #0b0b0d;
+    --bg-elevated: #131316;
+    --text: #eaeaec;
+    --text-muted: #bdbdc3;
+    --text-faint: #aaaabd;
+    --border: rgba(255,255,255,0.07);
+    --border-strong: rgba(255,255,255,0.14);
+    --accent: #6e8bff;
+    --accent-dim: rgba(110,139,255,0.12);
+    --danger: #ff6b6b;
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    width: 340px;
+    margin: 0;
+    padding: 18px 16px 14px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .header h1 {
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    margin: 0;
+    color: var(--text);
+  }
+
+  .header .count {
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+
+  #mappings {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mapping-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 2px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s ease;
+  }
+
+  .mapping-item:hover {
+    background: rgba(255,255,255,0.02);
+  }
+
+  .mapping-item .keyword {
+    flex: 0 0 auto;
+    min-width: 44px;
+    padding: 4px 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid transparent;
+    border-radius: 5px;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 12px;
+    text-align: center;
+    cursor: default;
+    user-select: none;
+  }
+
+  .mapping-item .url {
+    flex: 1;
+    min-width: 0;
+    padding: 5px 7px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    color: var(--text);
+    font-size: 12.5px;
+    outline: none;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .mapping-item .url:hover {
+    background: rgba(255,255,255,0.03);
+  }
+
+  .mapping-item .url:focus {
+    background: rgba(255,255,255,0.04);
+    border-color: var(--accent);
+  }
+
+  .row-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 0 0 auto;
+  }
+
+  .icon-btn {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateX(2px);
+    transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
+  }
+
+  .mapping-item:hover .icon-btn,
+  .mapping-item:focus-within .icon-btn {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .icon-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .icon-btn.edit-btn svg { fill: var(--text-faint); }
+  .icon-btn.edit-btn:hover { background: rgba(110,139,255,0.1); }
+  .icon-btn.edit-btn:hover svg { fill: var(--accent); }
+
+  .icon-btn.delete-btn svg { fill: var(--text-faint); }
+  .icon-btn.delete-btn:hover { background: rgba(255,107,107,0.1); }
+  .icon-btn.delete-btn:hover svg { fill: var(--danger); }
+
+  .empty-state {
+    padding: 24px 4px;
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 12px;
+  }
+
+  .add-mapping {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 6px 2px;
+  }
+
+  .add-mapping input.keyword {
+    flex: 0 0 auto;
+    width: 60px;
+    padding: 6px 8px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .add-mapping input.url {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 8px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text);
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .add-mapping input:focus {
+    border-color: var(--accent);
+  }
+
+  .add-mapping input::placeholder {
+    color: var(--text-faint);
+  }
+
+  #addBtn {
+    flex: 0 0 auto;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--accent);
+    border: 1px solid transparent;
+    border-radius: 5px;
+    color: var(--accent);
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+
+  #addBtn:active {
+    transform: scale(0.94);
+  }
+
+  #addBtn svg {
+    width: 15px;
+    height: 15px;
+    color: var(--bg);
+  }
+
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer .hint {
+    font-size: 11px;
+    color: var(--text-faint);
+    line-height: 1.5;
+  }
+
+  .footer .hint b {
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .ghost-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .ghost-btn {
+    padding: 5px 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text-muted);
+    font-size: 11px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  }
+
+  .ghost-btn:hover {
+    border-color: var(--border-strong);
+    color: var(--text);
+    background: rgba(255,255,255,0.03);
+  }
+
+  #exportBtn, #importBtn{
+    background-color: var(--accent);
+    color: black;
+    font-weight: 600;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .modal-overlay.active {
+    display: flex;
+  }
+
+  .modal {
+    width: 88%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  }
+
+  .modal h3 {
+    margin: 0 0 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .modal p {
+    margin: 0 0 10px;
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+
+  .modal textarea {
+    width: 100%;
+    height: 110px;
+    padding: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 10.5px;
+    resize: vertical;
+    outline: none;
+  }
+
+  .modal textarea:focus {
+    border-color: var(--accent);
+  }
+
+  .modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .modal-buttons button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 11.5px;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+
+  .modal-buttons button:hover { opacity: 0.85; }
+
+  .modal-buttons .btn-cancel {
+    background: rgba(255,255,255,0.06);
+    color: var(--text-muted);
+  }
+
+  .modal-buttons .btn-primary {
+    background: var(--accent);
+    color: #0b0b0d;
+    font-weight: 600;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 16px;
+    transform: translateX(-50%) translateY(8px);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 7px;
+    font-size: 11.5px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    z-index: 1100;
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .toast.error {
+    border-color: rgba(255,107,107,0.4);
+    color: #ffb3b3;
+  }
+</style>
 </head>
 <body>
-  <h2>GoKey - Keyword URL Mapper</h2>
+
+  <div class="header">
+    <h1>GoKey</h1>
+    <span class="count" id="mappingCount"></span>
+  </div>
+
   <div id="mappings"></div>
-  
+
   <div class="add-mapping">
-    <input type="text" id="newKeyword" class="keyword" placeholder="Keyword">
+    <input type="text" id="newKeyword" class="keyword" placeholder="key">
     <input type="text" id="newUrl" class="url" placeholder="https://example.com">
-    <button id="addBtn">Add</button>
+    <button id="addBtn" title="Add mapping">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg>
+    </button>
   </div>
-  
-  <div class="config-buttons">
-    <button class="export" id="exportBtn">Export Config</button>
-    <button class="import" id="importBtn">Import Config</button>
+
+  <div class="footer">
+    <div class="hint">Type <b>go</b> + space + keyword in the address bar</div>
+    <div class="ghost-actions">
+      <button class="ghost-btn" id="exportBtn">Export</button>
+      <button class="ghost-btn" id="importBtn">Import</button>
+    </div>
   </div>
-  
-  <div class="instructions">
-    <strong>How to use:</strong><br>
-    Type "go" followed by space and your keyword in the address bar.<br>
-    Example: "go ash" will navigate to asharma.tech
-  </div>
-  
-  <div class="modal" id="exportModal">
-    <div class="modal-content">
-      <h3>Export Configuration</h3>
-      <p style="font-size: 12px; color: #666; margin-bottom: 5px;">Copy this config to share with others or backup:</p>
+
+  <!-- Export Modal -->
+  <div class="modal-overlay" id="exportModal">
+    <div class="modal">
+      <h3>Export configuration</h3>
+      <p>Copy this string to back up or share your mappings.</p>
       <textarea id="exportTextarea" readonly></textarea>
       <div class="modal-buttons">
-        <button class="copy" id="copyBtn">Copy</button>
-        <button class="cancel" id="closeExportModal">Close</button>
+        <button class="btn-cancel" id="closeExportModal">Close</button>
+        <button class="btn-primary" id="copyBtn">Copy</button>
       </div>
     </div>
   </div>
-  
-  <div class="modal" id="importModal">
-    <div class="modal-content">
-      <h3>Import Configuration</h3>
-      <p style="font-size: 12px; color: #666; margin-bottom: 5px;">Paste config below to import:</p>
+
+  <!-- Import Modal -->
+  <div class="modal-overlay" id="importModal">
+    <div class="modal">
+      <h3>Import configuration</h3>
+      <p>Paste a previously exported config string below.</p>
       <textarea id="importTextarea" placeholder="Paste config here..."></textarea>
       <div class="modal-buttons">
-        <button class="cancel" id="closeImportModal">Cancel</button>
-        <button class="confirm" id="confirmImport">Import</button>
+        <button class="btn-cancel" id="closeImportModal">Cancel</button>
+        <button class="btn-primary" id="confirmImport">Import</button>
       </div>
     </div>
   </div>
-  
+
+  <div class="toast" id="toast"></div>
+
   <script src="popup.js"></script>
 </body>
 </html>

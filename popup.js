@@ -1,4 +1,4 @@
-// Default mappings
+// Default keyword mappings (kept in sync with background.js)
 const defaultMappings = {
   "ash": "https://asharma.tech",
   "mt": "https://meet.google.com",
@@ -14,7 +14,20 @@ const defaultMappings = {
   "li": "https://linkedin.com/feed/"
 };
 
-// Load and display mappings
+// ---------- Toast ----------
+let toastTimer = null;
+function showToast(message, isError = false) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.toggle('error', isError);
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2200);
+}
+
+// ---------- Load / render ----------
 function loadMappings() {
   chrome.storage.local.get(['keywordMappings'], (result) => {
     const mappings = result.keywordMappings || defaultMappings;
@@ -22,46 +35,52 @@ function loadMappings() {
   });
 }
 
-// Display mappings in the popup
 function displayMappings(mappings) {
   const container = document.getElementById('mappings');
+  const entries = Object.entries(mappings);
   container.innerHTML = '';
-  
-  for (const [keyword, url] of Object.entries(mappings)) {
+
+  document.getElementById('mappingCount').textContent =
+    entries.length ? `${entries.length} mapping${entries.length === 1 ? '' : 's'}` : '';
+
+  if (entries.length === 0) {
+    container.innerHTML = `<div class="empty-state">No mappings yet — add one below</div>`;
+    return;
+  }
+
+  for (const [keyword, url] of entries) {
     const item = document.createElement('div');
     item.className = 'mapping-item';
     item.innerHTML = `
-      <input type="text" class="keyword" value="${keyword}" readonly data-keyword="${keyword}">
-      <input type="text" class="url" value="${url}" data-keyword="${keyword}">
-      <button class="icon-btn edit-btn" data-keyword="${keyword}" title="Edit URL">
-        <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-      </button>
-      <button class="icon-btn delete-btn" data-keyword="${keyword}" title="Delete">
-        <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-      </button>
+      <span class="keyword" data-keyword="${keyword}">${keyword}</span>
+      <input type="text" class="url" value="${url}" data-keyword="${keyword}" spellcheck="false">
+      <div class="row-actions">
+        <button class="icon-btn edit-btn" data-keyword="${keyword}" title="Edit URL">
+          <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        </button>
+        <button class="icon-btn delete-btn" data-keyword="${keyword}" title="Delete">
+          <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+        </button>
+      </div>
     `;
     container.appendChild(item);
   }
-  
-  // Add delete button listeners
+
   document.querySelectorAll('.mapping-item .delete-btn').forEach(button => {
     button.addEventListener('click', (e) => {
-      const keywordToDelete = e.currentTarget.dataset.keyword;
-      deleteMapping(keywordToDelete);
+      deleteMapping(e.currentTarget.dataset.keyword);
     });
   });
-  
-  // Add edit button listeners
+
   document.querySelectorAll('.mapping-item .edit-btn').forEach(button => {
     button.addEventListener('click', (e) => {
-      const keywordToEdit = e.currentTarget.dataset.keyword;
-      const urlInput = document.querySelector(`.mapping-item input.url[data-keyword="${keywordToEdit}"]`);
+      const keyword = e.currentTarget.dataset.keyword;
+      const urlInput = document.querySelector(`.mapping-item input.url[data-keyword="${keyword}"]`);
       urlInput.focus();
       urlInput.select();
     });
   });
-  
-  // Add URL input change listeners for editing
+
   document.querySelectorAll('.mapping-item input.url').forEach(input => {
     input.addEventListener('blur', (e) => {
       const keyword = e.target.dataset.keyword;
@@ -70,7 +89,7 @@ function displayMappings(mappings) {
         updateMapping(keyword, newUrl);
       }
     });
-    
+
     input.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         e.target.blur();
@@ -79,113 +98,109 @@ function displayMappings(mappings) {
   });
 }
 
-// Add a new mapping
+// ---------- Mutations ----------
 function addMapping(keyword, url) {
   if (!keyword || !url) {
-    alert('Please enter both keyword and URL');
+    showToast('Enter both a keyword and a URL', true);
     return;
   }
-  
-  // Ensure URL has protocol
+
   if (!url.startsWith('http://') && !url.startsWith('https://')) {
     url = 'https://' + url;
   }
-  
+
   chrome.storage.local.get(['keywordMappings'], (result) => {
-    const mappings = result.keywordMappings || defaultMappings;
+    const mappings = result.keywordMappings || { ...defaultMappings };
     mappings[keyword.toLowerCase()] = url;
     chrome.storage.local.set({ keywordMappings: mappings }, () => {
       loadMappings();
       document.getElementById('newKeyword').value = '';
       document.getElementById('newUrl').value = '';
+      document.getElementById('newKeyword').focus();
+      showToast(`Added "${keyword.toLowerCase()}"`);
     });
   });
 }
 
-// Delete a mapping
 function deleteMapping(keyword) {
   chrome.storage.local.get(['keywordMappings'], (result) => {
-    const mappings = result.keywordMappings || defaultMappings;
+    const mappings = result.keywordMappings || { ...defaultMappings };
     delete mappings[keyword];
     chrome.storage.local.set({ keywordMappings: mappings }, () => {
       loadMappings();
+      showToast(`Removed "${keyword}"`);
     });
   });
 }
 
-// Update an existing mapping
 function updateMapping(keyword, newUrl) {
-  // Ensure URL has protocol
   if (!newUrl.startsWith('http://') && !newUrl.startsWith('https://')) {
     newUrl = 'https://' + newUrl;
   }
-  
+
   chrome.storage.local.get(['keywordMappings'], (result) => {
-    const mappings = result.keywordMappings || defaultMappings;
+    const mappings = result.keywordMappings || { ...defaultMappings };
     mappings[keyword.toLowerCase()] = newUrl;
     chrome.storage.local.set({ keywordMappings: mappings }, () => {
-      // Don't reload, just update the input value with the formatted URL
       const urlInput = document.querySelector(`.mapping-item input.url[data-keyword="${keyword}"]`);
       if (urlInput) {
         urlInput.value = newUrl;
       }
+      showToast('Saved');
     });
   });
 }
 
-// Export configuration as JSON string
+// ---------- Export / Import ----------
 function exportConfig() {
   chrome.storage.local.get(['keywordMappings'], (result) => {
     const mappings = result.keywordMappings || defaultMappings;
     const configString = JSON.stringify(mappings, null, 2);
     const base64Config = btoa(configString);
-    
+
     document.getElementById('exportTextarea').value = base64Config;
     document.getElementById('exportModal').classList.add('active');
   });
 }
 
-// Import configuration from base64 string
 function importConfig() {
   const base64Config = document.getElementById('importTextarea').value.trim();
-  
+
   if (!base64Config) {
-    alert('Please paste a config string');
+    showToast('Paste a config string first', true);
     return;
   }
-  
+
   try {
     const configString = atob(base64Config);
     const mappings = JSON.parse(configString);
-    
-    if (typeof mappings !== 'object' || mappings === null) {
+
+    if (typeof mappings !== 'object' || mappings === null || Array.isArray(mappings)) {
       throw new Error('Invalid config format');
     }
-    
-    // Validate that all values are strings (URLs)
+
     for (const [key, value] of Object.entries(mappings)) {
       if (typeof value !== 'string') {
         throw new Error('Invalid config: all values must be strings');
       }
     }
-    
+
     chrome.storage.local.set({ keywordMappings: mappings }, () => {
       loadMappings();
-      document.getElementById('importModal').classList.remove('active');
+      closeModal('importModal');
       document.getElementById('importTextarea').value = '';
-      alert('Configuration imported successfully!');
+      showToast('Configuration imported');
     });
   } catch (e) {
-    alert('Invalid config format. Please make sure you copied the entire config string.');
+    showToast('Invalid config string', true);
   }
 }
 
-// Modal controls
 function closeModal(modalId) {
   document.getElementById(modalId).classList.remove('active');
 }
 
-// Event listeners
+// ---------- Event wiring ----------
 document.addEventListener('DOMContentLoaded', loadMappings);
 
 document.getElementById('addBtn').addEventListener('click', () => {
@@ -194,7 +209,6 @@ document.getElementById('addBtn').addEventListener('click', () => {
   addMapping(keyword, url);
 });
 
-// Allow adding with Enter key
 document.getElementById('newUrl').addEventListener('keypress', (e) => {
   if (e.key === 'Enter') {
     const keyword = document.getElementById('newKeyword').value.trim();
@@ -203,32 +217,33 @@ document.getElementById('newUrl').addEventListener('keypress', (e) => {
   }
 });
 
-// Export/Import button listeners
+document.getElementById('newKeyword').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    document.getElementById('newUrl').focus();
+  }
+});
+
 document.getElementById('exportBtn').addEventListener('click', exportConfig);
 document.getElementById('importBtn').addEventListener('click', () => {
   document.getElementById('importModal').classList.add('active');
 });
 
-// Modal close buttons
 document.getElementById('closeExportModal').addEventListener('click', () => closeModal('exportModal'));
 document.getElementById('closeImportModal').addEventListener('click', () => closeModal('importModal'));
 
-// Copy button
 document.getElementById('copyBtn').addEventListener('click', () => {
   const textarea = document.getElementById('exportTextarea');
   textarea.select();
   document.execCommand('copy');
-  alert('Config copied to clipboard!');
+  showToast('Copied to clipboard');
 });
 
-// Confirm import button
 document.getElementById('confirmImport').addEventListener('click', importConfig);
 
-// Close modals when clicking outside
-document.querySelectorAll('.modal').forEach(modal => {
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      modal.classList.remove('active');
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      overlay.classList.remove('active');
     }
   });
 });
