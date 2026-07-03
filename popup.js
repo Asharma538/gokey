@@ -133,6 +133,58 @@ function updateMapping(keyword, newUrl) {
   });
 }
 
+// Export configuration as JSON string
+function exportConfig() {
+  chrome.storage.local.get(['keywordMappings'], (result) => {
+    const mappings = result.keywordMappings || defaultMappings;
+    const configString = JSON.stringify(mappings, null, 2);
+    const base64Config = btoa(configString);
+    
+    document.getElementById('exportTextarea').value = base64Config;
+    document.getElementById('exportModal').classList.add('active');
+  });
+}
+
+// Import configuration from base64 string
+function importConfig() {
+  const base64Config = document.getElementById('importTextarea').value.trim();
+  
+  if (!base64Config) {
+    alert('Please paste a config string');
+    return;
+  }
+  
+  try {
+    const configString = atob(base64Config);
+    const mappings = JSON.parse(configString);
+    
+    if (typeof mappings !== 'object' || mappings === null) {
+      throw new Error('Invalid config format');
+    }
+    
+    // Validate that all values are strings (URLs)
+    for (const [key, value] of Object.entries(mappings)) {
+      if (typeof value !== 'string') {
+        throw new Error('Invalid config: all values must be strings');
+      }
+    }
+    
+    chrome.storage.local.set({ keywordMappings: mappings }, () => {
+      loadMappings();
+      document.getElementById('importModal').classList.remove('active');
+      document.getElementById('importTextarea').value = '';
+      alert('Configuration imported successfully!');
+    });
+  } catch (e) {
+    alert('Invalid config format. Please make sure you copied the entire config string.');
+  }
+}
+
+// Modal controls
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.remove('active');
+}
+
 // Event listeners
 document.addEventListener('DOMContentLoaded', loadMappings);
 
@@ -149,4 +201,34 @@ document.getElementById('newUrl').addEventListener('keypress', (e) => {
     const url = document.getElementById('newUrl').value.trim();
     addMapping(keyword, url);
   }
+});
+
+// Export/Import button listeners
+document.getElementById('exportBtn').addEventListener('click', exportConfig);
+document.getElementById('importBtn').addEventListener('click', () => {
+  document.getElementById('importModal').classList.add('active');
+});
+
+// Modal close buttons
+document.getElementById('closeExportModal').addEventListener('click', () => closeModal('exportModal'));
+document.getElementById('closeImportModal').addEventListener('click', () => closeModal('importModal'));
+
+// Copy button
+document.getElementById('copyBtn').addEventListener('click', () => {
+  const textarea = document.getElementById('exportTextarea');
+  textarea.select();
+  document.execCommand('copy');
+  alert('Config copied to clipboard!');
+});
+
+// Confirm import button
+document.getElementById('confirmImport').addEventListener('click', importConfig);
+
+// Close modals when clicking outside
+document.querySelectorAll('.modal').forEach(modal => {
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.remove('active');
+    }
+  });
 });
