@@ -31,13 +31,7 @@ chrome.omnibox.onInputEntered.addListener((text, disposition) => {
     const url = mappings[keyword];
     
     if (url) {
-      if (disposition === "currentTab") {
-        chrome.tabs.update({ url: url });
-      } else if (disposition === "newForegroundTab") {
-        chrome.tabs.create({ url: url });
-      } else if (disposition === "newBackgroundTab") {
-        chrome.tabs.create({ url: url, active: false });
-      }
+      chrome.tabs.update({ url: url });
     } else {
       // If no mapping found, search normally
       const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(text)}`;
